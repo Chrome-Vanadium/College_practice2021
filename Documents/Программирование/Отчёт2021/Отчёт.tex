@@ -1,0 +1,205 @@
+%% -*- coding: utf-8 -*-
+\documentclass[12pt,a4paper]{scrartcl} 
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{indentfirst}
+\usepackage{misccorr}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\begin{document}
+		\begin{titlepage}
+		\begin{center}
+			\large
+			МИНИСТЕРСТВО НАУКИ И ВЫСШЕГО ОБРАЗОВАНИЯ РОССИЙСКОЙ ФЕДЕРАЦИИ
+			
+			Федеральное государственное бюджетное образовательное учреждение высшего образования
+			
+			\textbf{АДЫГЕЙСКИЙ ГОСУДАРСТВЕННЫЙ УНИВЕРСИТЕТ}
+			\vspace{0.25cm}
+			
+			Инженерно-физический факультет
+			
+			Кафедра автоматизированных систем обработки информации и управления
+			\vfill
+			
+			\vfill
+			
+			\textsc{Отчет по практике}\\[5mm]
+			
+			{\LARGE \textit{Решение системы линейных алгебраических уравнений методом Гаусса-Жордана}}
+			\bigskip
+			
+			2 курс, группа 2УТС
+		\end{center}
+		\vfill
+		
+		\newlength{\ML}
+		\settowidth{\ML}{«\underline{\hspace{0.7cm}}» \underline{\hspace{2cm}}}
+		\hfill\begin{minipage}{0.5\textwidth}
+			Выполнил:\\
+			\underline{\hspace{\ML}} А.\,А.~Мугу\\
+			«\underline{\hspace{0.7cm}}» \underline{\hspace{2cm}} 2021 г.
+		\end{minipage}%
+		\bigskip
+		
+		\hfill\begin{minipage}{0.5\textwidth}
+			Руководитель:\\
+			\underline{\hspace{\ML}} С.\,В.~Теплоухов\\
+			«\underline{\hspace{0.7cm}}» \underline{\hspace{2cm}} 2021 г.
+		\end{minipage}%
+		\vfill
+		
+		\begin{center}
+			Майкоп, 2021 г.
+		\end{center}
+	\end{titlepage}
+\section{Введение}
+\label{sec:intro}
+Метод Гаусса — Жордана (метод полного исключения неизвестных) — метод, который используется для решения квадратных систем линейных алгебраических уравнений, нахождения обратной матрицы, нахождения координат вектора в заданном базисе или отыскания ранга матрицы. Метод является модификацией метода Гаусса. 
+\section{Ход работы}
+\label{sec:exp}
+\subsection{Код приложения}
+\label{sec:exp:code}
+\begin{verbatim}
+#include <math.h>
+#include <iostream>
+using namespace std;
+
+//вариант 2
+class Gauss
+{
+float a[50][50];
+int n;
+public:
+void accept()
+{
+cout << "Enter no. of variables: ";
+cin >> n;
+for (int i = 0; i < n; i++)
+{
+for (int j = 0; j < n + 1; j++)
+{
+if (j == n)
+cout << "Constant no." << i + 1 << " = ";
+else
+cout << "a[" << i + 1 << "][" << j + 1 << "] = ";
+cin >> a[i][j];
+}
+}
+}
+void display()
+{
+for (int i = 0; i < n; i++)
+{
+cout << "\n";
+for (int j = 0; j < n + 1; j++)
+{
+if (j == n)
+cout << " ";
+cout << a[i][j] << "\t";
+}
+}
+}
+
+void gauss()//converting augmented matrix to row echelon form
+{
+float temp;//Line 1
+for (int i = 0; i < n; i++)
+{
+for (int j = i + 1; j < n; j++)
+{
+temp = a[j][i] / a[i][i];//Line 2
+for (int k = i; k < n + 1; k++)
+{
+a[j][k] -= temp * a[i][k];//Line 3
+//a[j][k]-=a[j][i]*a[i][k]/a[i][i];//Line 4
+}
+}
+}
+}
+
+void EnterJordan()//converting to reduced row echelon form
+{
+float temp;
+for (int i = n - 1; i >= 0; i--)
+{
+
+for (int j = i - 1; j >= 0; j--)
+{
+temp = a[j][i] / a[i][i];
+for (int k = n; k >= i; k--)
+{
+a[j][k] -= temp * a[i][k];
+}
+}
+}
+
+float *x = new float [n];
+for (int i = 0; i < n; i++)//making leading coefficients zero
+x[i] = 0;
+for (int i = 0; i < n; i++)
+{
+for (int j = 0; j < n + 1; j++)
+{
+if (x[i] == 0 && j != n)
+x[i] = a[i][j];
+if (x[i] != 0)
+a[i][j] /= x[i];
+}
+}
+delete[]x;
+}
+void credits()
+{
+for (int i = 0; i < n; i++)
+{
+cout << "\nx" << i + 1 << " = " << a[i][n] << endl;
+}
+}
+
+};
+
+int main()
+{
+Gauss obj;
+obj.accept();
+cout << "\n\nAugmented matrix: \n\n\n";
+obj.display();
+obj.gauss();
+cout << "\n\nRow Echelon form: \n\n\n";
+obj.display();
+obj.EnterJordan();
+cout << "\n\nReduced row echelon form:\n\n\n";
+obj.display();
+cout << "\n\nSolution: \n\n\n";
+obj.credits();
+return 0;
+}
+\end{verbatim}
+\subsection{Алгоритм}
+\label{sec:example}
+\begin{enumerate}
+	\item Выбирают первый слева столбец матрицы, в котором есть хоть одно отличное от нуля значение.
+	\item Если самое верхнее число в этом столбце ноль, то меняют всю первую строку матрицы с другой строкой матрицы, где в этой колонке нет нуля.
+	\item Все элементы первой строки делят на верхний элемент выбранного столбца.
+	\item Из оставшихся строк вычитают первую строку, умноженную на первый элемент соответствующей строки, с целью получить первым элементом каждой строки (кроме первой) ноль.
+	\item Далее проводят такую же процедуру с матрицей, получающейся из исходной матрицы после вычёркивания первой строки и первого столбца.
+	\item После повторения этой процедуры n-1 раз получают верхнюю треугольную матрицу
+	\item Вычитают из предпоследней строки последнюю строку, умноженную на соответствующий коэффициент, с тем, чтобы в предпоследней строке осталась только 1 на главной диагонали.
+	\item Повторяют предыдущий шаг для последующих строк. В итоге получают единичную матрицу и решение на месте свободного вектора (с ним необходимо проводить все те же преобразования).
+\end{enumerate}
+\newpage
+\section{Пример работы программы}
+\label{pic:example}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.4\textwidth]{practice_code1.jpg}
+	\caption{Пример вычислений}\label{fig:par}
+\end{figure}
+\begin{thebibliography}{9}
+	\bibitem{Chacon-2016}Чакон С. Штрауб Б. Git для профессионального программиста 2016 г.
+	\bibitem{Knuth-2003}Кнут Д.Э. Всё про \TeX. \newblock --- Москва: Изд. Вильямс, 2003 г. 550~с.
+	\bibitem{Lvovsky-2003}Львовский С.М. Набор и верстка в системе \LaTeX{}. \newblock --- 3-е издание, исправленное и дополненное, 2003 г.
+	\bibitem{Voroncov-2005}Воронцов К.В. \LaTeX{} в примерах. 2005 г.
+\end{thebibliography}
+\end{document}
